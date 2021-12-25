@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.4.22 <0.9.0;
 
-contract Faucet {
+import "./Owned.sol";
+
+contract Faucet is Owned {
   /**
     this is a special function. It's called when you
     make a transaction that doesn't specify function
@@ -16,6 +18,11 @@ contract Faucet {
   mapping(address => bool) private funders;
   mapping(uint => address) private lutFunders;
 
+  modifier limitWithdraw(uint withdrawAmount) {
+    require(withdrawAmount < 1000000000000000000, "Cannot withdraw more than 0.1 ether "); 
+    _;
+  }
+
   receive() external payable {}
 
   function addFunds() external payable {
@@ -29,6 +36,14 @@ contract Faucet {
       funders[funder] = true;
       lutFunders[index] = funder;
     }
+  }
+
+  function withdraw(uint withdrawAmount) external limitWithdraw(withdrawAmount)  {
+
+    // require(withdrawAmount < 10000000000000 00000, "Cannot withdraw more than 0.1 ether "); 
+    // if(withdrawAmount < 1000000000000000000){
+      payable(msg.sender).transfer(withdrawAmount);
+    // }
   }
 
   function getAllFunders() external view returns (address[] memory) {
@@ -48,7 +63,8 @@ contract Faucet {
 }
 
 // const instance = await Faucet.deployed();
-// instance.addFunds({from: accounts[0], value: "200000000"})
-// instance.addFunds({from: accounts[1], value: "200000000"})
+// instance.addFunds({from: accounts[0], value: "2000000000000000000"})
+// instance.addFunds({from: accounts[1], value: "2000000000000000000"})
+// instance.withdraw("5000000000000000000", {from: accounts[1]})
 // instance.getFunderAtIndex(0)
 // instance.getAllFunders()
